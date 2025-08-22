@@ -97,7 +97,7 @@ function Home() {
       <div className="max-w-md w-full p-8 rounded-2xl shadow bg-white">
         <h1 className="text-3xl font-bold mb-2">Vet Vax</h1>
         <p className="text-slate-600 mb-4">
-          Mobile dog vaccine booking — coming soon.
+          Mobile dog vaccine booking — coming soon... 2026
         </p>
         <nav className="flex gap-4">
           <Link to="/" className="underline">
@@ -127,14 +127,52 @@ function Appointments() {
 }
 
 function Queue() {
+  const [items, setItems] = useState<any[]>([])
+  const [error, setError] = useState<string | undefined>()
+
+  async function load() {
+    setError(undefined)
+    try {
+      const res = await fetch("https://0sdq9cvr63.execute-api.us-east-2.amazonaws.com/appointments")
+      const json = await res.json()
+      if (!res.ok) setError(json?.error || `HTTP ${res.status}`)
+      else setItems(json)
+    } catch (e:any) {
+      setError(e?.message || "Network error")
+    }
+  }
+
+  // load on first render
+  useState(() => { load() })
+
   return (
     <div className="min-h-screen bg-slate-50 p-6">
-      <div className="max-w-xl mx-auto p-6 bg-white rounded-2xl shadow">
-        <h2 className="text-2xl font-bold mb-4">Queue</h2>
-        <p>Queue view coming soon.</p>
+      <div className="max-w-3xl mx-auto p-6 bg-white rounded-2xl shadow">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-2xl font-bold">Queue</h2>
+          <button onClick={load} className="px-3 py-2 rounded bg-blue-600 text-white">Refresh</button>
+        </div>
+        {error && <p className="text-red-600 mb-3">❌ {error}</p>}
+        {items.length === 0 ? (
+          <p>No appointments yet.</p>
+        ) : (
+          <ul className="divide-y">
+            {items.map((a) => (
+              <li key={a.id} className="py-3">
+                <div className="flex justify-between">
+                  <div>
+                    <div className="font-medium">{a.owner} — {a.dog}</div>
+                    <div className="text-sm text-slate-600">{a.date} • {a.contact}</div>
+                  </div>
+                  <div className="text-sm">{a.status}</div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </div>
-  );
+  )
 }
 
 /* ------------------------------ Router ----------------------------- */
