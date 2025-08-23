@@ -2,9 +2,10 @@ import { useEffect, useState } from "react";
 import { HashRouter, Routes, Route, Link, Navigate } from "react-router-dom";
 import "./App.css";
 
+/** Your API base */
 const API = "https://0sdq9cvr63.execute-api.us-east-2.amazonaws.com";
 
-/* ------------ Appointment Form ------------ */
+/* ------------------------- Appointment Form ------------------------- */
 function AppointmentForm() {
   const [form, setForm] = useState({ owner: "", dog: "", date: "", contact: "" });
   const [state, setState] = useState<{ ok?: boolean; error?: string; id?: string }>({});
@@ -22,9 +23,12 @@ function AppointmentForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
+
       const ct = res.headers.get("content-type") || "";
       const body = ct.includes("application/json") ? await res.json() : await res.text();
+
       if (!res.ok) throw new Error(typeof body === "string" ? body : `HTTP ${res.status}`);
+
       setState({ ok: true, id: (body as any).id });
       setForm({ owner: "", dog: "", date: "", contact: "" });
     } catch (err: any) {
@@ -48,7 +52,7 @@ function AppointmentForm() {
   );
 }
 
-/* -------------- Appointments -------------- */
+/* --------------------------- Appointments --------------------------- */
 function Appointments() {
   const [items, setItems] = useState<any[]>([]);
   const [error, setError] = useState<string | undefined>();
@@ -101,7 +105,7 @@ function Appointments() {
   );
 }
 
-/* ------------------------- Queue (status=NEW) ------------------------ */
+/* --------------------------------- Queue ----------------------------- */
 function Queue() {
   const [items, setItems] = useState<any[]>([]);
   const [error, setError] = useState<string | undefined>();
