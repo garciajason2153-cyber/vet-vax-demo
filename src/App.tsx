@@ -115,12 +115,25 @@ function Queue() {
     setLoading(true);
     setError(undefined);
     try {
-      const res = await fetch(`${API}/appointments?status=NEW`, { headers: { "Content-Type": "application/json" } });
+      // Call the same endpoint as Appointments (no query string)
+      const res = await fetch(`${API}/appointments`, {
+        headers: { "Content-Type": "application/json" },
+      });
+
       const ct = res.headers.get("content-type") || "";
       const body = ct.includes("application/json") ? await res.json() : await res.text();
-      if (!res.ok) throw new Error(typeof body === "string" ? body : `HTTP ${res.status}`);
-      console.log("Queue payload:", body);
-      setItems(Array.isArray(body) ? body : []);
+
+      if (!res.ok) {
+        throw new Error(typeof body === "string" ? body : `HTTP ${res.status}`);
+      }
+
+      // 🔑 Filter client-side for status NEW (case-insensitive)
+      const all = Array.isArray(body) ? body : [];
+      const onlyNew = all.filter(
+        (i) => String(i?.status ?? "").toUpperCase() === "NEW"
+      );
+
+      setItems(onlyNew);
     } catch (e: any) {
       setError(e.message || "Network error");
       setItems([]);
@@ -145,7 +158,9 @@ function Queue() {
           {items.map((a) => (
             <li key={a.id} className="border rounded p-3">
               <div className="font-medium">{a.dog} — {a.owner}</div>
-              <div className="text-sm opacity-80">{new Date(a.date || a.createdAt).toLocaleString()}</div>
+              <div className="text-sm opacity-80">
+                {new Date(a.date || a.createdAt).toLocaleString()}
+              </div>
               <div className="text-sm">{a.contact}</div>
               <div className="text-xs uppercase opacity-70">{a.status}</div>
             </li>
@@ -155,7 +170,6 @@ function Queue() {
     </div>
   );
 }
-
 /* --------------------------------- App -------------------------------- */
 export default function App() {
   return (
