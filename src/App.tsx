@@ -84,7 +84,7 @@ function Queue() {
     setLoading(true);
     setError(undefined);
     try {
-      const res = await fetch(`${API}/appointments`);
+      const res = await fetch(`${API}/appointments?status=NEW`);
       const ct = res.headers.get("content-type") || "";
       const body = ct.includes("application/json") ? await res.json() : await res.text();
       if (!res.ok) {
